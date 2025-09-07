@@ -1,16 +1,25 @@
+import React, { useState } from 'react';
 import FormSection from './components/Layout/FormSection';
 import PreviewSection from './components/Layout/PreviewSection';
 
 function App() {
+  const [formData, setFormData] = useState({
+    nome: '',
+    email: '',
+    telefone: '',
+    linkedin: '',
+    resumo: '',
+    habilidades: [],
+    experiencias: [],
+  });
+
   return (
     <div className="flex h-screen bg-gray-50">
-      {/* Formulário - Esquerda */}
-      <div className="w-1/2 p-8 border-r border-gray-200 overflow-y-auto">
-        <FormSection />
+      <div className="w-1/2 h-screen overflow-y-auto border-r border-gray-200">
+        <FormSection formData={formData} setFormData={setFormData} />
       </div>
-      {/* Preview - Direita */}
-      <div className="w-1/2 p-8 overflow-y-auto">
-        <PreviewSection />
+      <div className="w-1/2 h-screen overflow-y-auto">
+        <PreviewSection formData={formData} />
       </div>
     </div>
   );
