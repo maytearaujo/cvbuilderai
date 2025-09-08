@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Toast from '../UI/Toast';
+import type { Experiencia, Habilidade, FormData } from '../../types/cv.types';
 
 // Mock da chamada IA contextual
 const enhanceTextAI = async (text: string, type: string, retries = 2): Promise<string> => {
@@ -7,7 +8,6 @@ const enhanceTextAI = async (text: string, type: string, retries = 2): Promise<s
         setTimeout(() => {
             if (text.trim() === "") {
                 if (retries > 0) {
-                    // Retry automático
                     enhanceTextAI(text, type, retries - 1).then(resolve).catch(reject);
                 } else {
                     reject("Campo vazio");
@@ -35,12 +35,11 @@ const enhanceTextAI = async (text: string, type: string, retries = 2): Promise<s
 };
 
 interface FormSectionProps {
-    formData: any;
-    setFormData: (data: any) => void;
+    formData: FormData;
+    setFormData: (data: FormData) => void;
 }
 
 const FormSection: React.FC<FormSectionProps> = ({ formData, setFormData }) => {
-    // Toast feedback
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
     // Validações campos básicos
@@ -75,7 +74,6 @@ const FormSection: React.FC<FormSectionProps> = ({ formData, setFormData }) => {
     // Estado IA feedback
     const [loadingResumo, setLoadingResumo] = useState(false);
     const [errorResumo, setErrorResumo] = useState('');
-
     const [loadingDescIdx, setLoadingDescIdx] = useState<number | null>(null);
     const [errorDescIdx, setErrorDescIdx] = useState<number | null>(null);
 
@@ -113,9 +111,9 @@ const FormSection: React.FC<FormSectionProps> = ({ formData, setFormData }) => {
     };
 
     // Habilidades
-    const [novaHabilidade, setNovaHabilidade] = useState({
+    const [novaHabilidade, setNovaHabilidade] = useState<Habilidade>({
         nome: '',
-        nivel: 'Básico' as 'Básico' | 'Intermediário' | 'Avançado',
+        nivel: 'Básico',
     });
 
     const adicionarHabilidade = () => {
@@ -130,12 +128,12 @@ const FormSection: React.FC<FormSectionProps> = ({ formData, setFormData }) => {
     const removerHabilidade = (index: number) => {
         setFormData({
             ...formData,
-            habilidades: formData.habilidades.filter((_: any, i: number) => i !== index),
+            habilidades: formData.habilidades.filter((_, i) => i !== index),
         });
     };
 
     // Experiências
-    const [novaExperiencia, setNovaExperiencia] = useState({
+    const [novaExperiencia, setNovaExperiencia] = useState<Experiencia>({
         empresa: '',
         cargo: '',
         periodoInicio: '',
@@ -172,8 +170,8 @@ const FormSection: React.FC<FormSectionProps> = ({ formData, setFormData }) => {
     const handleExpChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
     ) => {
-        const { name, value, type, checked } = e.target;
-        const val = type === 'checkbox' ? checked : value;
+        const { name, value, type } = e.target;
+        const val = type === 'checkbox' && 'checked' in e.target ? (e.target as HTMLInputElement).checked : value;
         const updated = { ...novaExperiencia, [name]: val };
         setNovaExperiencia(updated);
         setExpErrors({
@@ -214,7 +212,7 @@ const FormSection: React.FC<FormSectionProps> = ({ formData, setFormData }) => {
     const removerExperiencia = (index: number) => {
         setFormData({
             ...formData,
-            experiencias: formData.experiencias.filter((_: any, i: number) => i !== index),
+            experiencias: formData.experiencias.filter((_, i) => i !== index),
         });
     };
 
@@ -314,7 +312,7 @@ const FormSection: React.FC<FormSectionProps> = ({ formData, setFormData }) => {
                     <select
                         className="border rounded p-2"
                         value={novaHabilidade.nivel}
-                        onChange={e => setNovaHabilidade({ ...novaHabilidade, nivel: e.target.value as any })}
+                        onChange={e => setNovaHabilidade({ ...novaHabilidade, nivel: e.target.value as Habilidade['nivel'] })}
                     >
                         <option value="Básico">Básico</option>
                         <option value="Intermediário">Intermediário</option>
@@ -329,7 +327,20 @@ const FormSection: React.FC<FormSectionProps> = ({ formData, setFormData }) => {
                     </button>
                 </div>
                 <ul className="mt-2">
-                    {formData.habilidades.map((hab: any, idx: number) => (
+                    {formData.habilidades.map((hab: Habilidade, idx: number) => (
+                        <li key={idx} className="flex items-center justify-between border-b py-1">
+                            <span>{hab.nome} <span className="text-xs text-gray-500">({hab.nivel})</span></span>
+                            <button
+                                type="button"
+                                className="text-red-500 hover:underline text-sm"
+                                onClick={() => removerHabilidade(idx)}
+                            >
+                                Remover
+                            </button>
+                        </li>
+                    ))}
+                </ul>                <ul className="mt-2">
+                    {formData.habilidades.map((hab: Habilidade, idx: number) => (
                         <li key={idx} className="flex items-center justify-between border-b py-1">
                             <span>{hab.nome} <span className="text-xs text-gray-500">({hab.nivel})</span></span>
                             <button
@@ -419,8 +430,8 @@ const FormSection: React.FC<FormSectionProps> = ({ formData, setFormData }) => {
                 >
                     Adicionar
                 </button>
-                <ul className="mt-2">
-                    {formData.experiencias.map((exp: any, idx: number) => (
+                   <ul className="mt-2">
+                    {formData.experiencias.map((exp: Experiencia, idx: number) => (
                         <li key={idx} className="flex flex-col md:flex-row md:items-center justify-between border-b py-1">
                             <span>
                                 <strong>{exp.empresa}</strong> - {exp.cargo} (

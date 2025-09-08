@@ -1,14 +1,21 @@
 import { useState, useEffect } from 'react';
 
-const useToast = () => {
-    const [toasts, setToasts] = useState([]);
+type ToastType = 'info' | 'success' | 'error';
+interface Toast {
+    id: string;
+    message: string;
+    type: ToastType;
+}
 
-    const addToast = (message, type = 'info') => {
+const useToast = () => {
+    const [toasts, setToasts] = useState<Toast[]>([]);
+
+    const addToast = (message: string, type: ToastType = 'info') => {
         const id = Math.random().toString(36).substr(2, 9);
         setToasts((prev) => [...prev, { id, message, type }]);
     };
 
-    const removeToast = (id) => {
+    const removeToast = (id: string) => {
         setToasts((prev) => prev.filter((toast) => toast.id !== id));
     };
 

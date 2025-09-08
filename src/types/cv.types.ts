@@ -1,26 +1,30 @@
-export interface PersonalInfo {
-  name: string;
-  email: string;
-  phone: string;
-  address: string;
+interface Habilidade {
+    nome: string;
+    nivel: 'Básico' | 'Intermediário' | 'Avançado';
 }
 
-export interface Skill {
-  id: number;
-  name: string;
+interface Experiencia {
+    empresa: string;
+    cargo: string;
+    periodoInicio: string;
+    periodoFim: string;
+    atual: boolean;
+    descricao: string;
 }
 
-export interface Experience {
-  id: number;
-  jobTitle: string;
-  company: string;
-  startDate: string;
-  endDate: string;
-  description: string;
+interface FormData {
+    nome: string;
+    email: string;
+    telefone: string;
+    linkedin: string;
+    resumo: string;
+    habilidades: Habilidade[];
+    experiencias: Experiencia[];
 }
 
-export interface CVData {
-  personalInfo: PersonalInfo;
-  skills: Skill[];
-  experiences: Experience[];
+interface FormSectionProps {
+    formData: FormData;
+    setFormData: (data: FormData) => void;
 }
+
+export type { Habilidade, Experiencia, FormData, FormSectionProps };

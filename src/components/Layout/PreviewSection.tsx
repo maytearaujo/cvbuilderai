@@ -1,10 +1,10 @@
-import React from 'react';
+import type { FormData } from '../../types/cv.types'; // ajuste o caminho conforme sua estrutura
 
 const Field = ({ value, placeholder }: { value: string; placeholder: string }) => (
   <span className={value ? '' : 'text-red-400 italic'}>{value || placeholder}</span>
 );
 
-const PreviewSection: React.FC<{ formData: any }> = ({ formData }) => {
+const PreviewSection: React.FC<{ formData: FormData }> = ({ formData }) => {
   // Skeleton screen quando todos os campos principais estão vazios
   if (
     !formData.nome &&
@@ -47,7 +47,7 @@ const PreviewSection: React.FC<{ formData: any }> = ({ formData }) => {
         <h2 className="text-xl font-semibold mb-1">Habilidades</h2>
         <ul className="list-disc pl-5">
           {formData.habilidades.length > 0 ? (
-            formData.habilidades.map((hab: any, idx: number) => (
+            formData.habilidades.map((hab, idx) => (
               <li key={idx}>
                 {hab.nome} <span className="text-xs text-gray-500">({hab.nivel})</span>
               </li>
@@ -61,7 +61,7 @@ const PreviewSection: React.FC<{ formData: any }> = ({ formData }) => {
         <h2 className="text-xl font-semibold mb-1">Experiências</h2>
         <ul className="space-y-2">
           {formData.experiencias.length > 0 ? (
-            formData.experiencias.map((exp: any, idx: number) => (
+            formData.experiencias.map((exp, idx) => (
               <li key={idx} className="border-b pb-2">
                 <div className="font-bold">{exp.empresa || <span className="text-red-400 italic">Empresa</span>}</div>
                 <div>{exp.cargo || <span className="text-red-400 italic">Cargo</span>}</div>

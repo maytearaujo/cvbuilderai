@@ -1,14 +1,14 @@
-import React from 'react';
+import React from "react";
 
 class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean }> {
-  constructor(props: any) {
+  constructor(props: { children: React.ReactNode }) {
     super(props);
     this.state = { hasError: false };
   }
   static getDerivedStateFromError() {
     return { hasError: true };
   }
-  componentDidCatch(error: any, info: any) {
+  componentDidCatch(error: unknown, info: unknown) {
     // Você pode logar o erro aqui
     console.error(error, info);
   }

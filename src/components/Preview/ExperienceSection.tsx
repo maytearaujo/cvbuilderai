@@ -1,4 +1,3 @@
-import React from 'react';
 
 const ExperienceSection: React.FC<{ experiences: Array<{ jobTitle: string; company: string; duration: string; description: string }> }> = ({ experiences }) => {
     return (

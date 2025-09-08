@@ -1,4 +1,3 @@
-import React from 'react';
 
 const SkillsSection: React.FC<{ skills: string[] }> = ({ skills }) => {
     return (

@@ -1,4 +1,3 @@
-import React from 'react';
 
 const PersonalHeader: React.FC<{ name: string; contact: string }> = ({ name, contact }) => {
     return (

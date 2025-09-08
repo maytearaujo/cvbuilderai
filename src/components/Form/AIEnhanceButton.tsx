@@ -1,4 +1,3 @@
-import React from 'react';
 
 const AIEnhanceButton: React.FC<{ onEnhance: () => void }> = ({ onEnhance }) => {
     return (
