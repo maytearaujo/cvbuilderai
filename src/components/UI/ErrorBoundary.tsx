@@ -1,33 +1,27 @@
-import React, { ErrorInfo } from 'react';
+import React from 'react';
 
-interface ErrorBoundaryProps {
-  children: React.ReactNode;
-}
-
-interface ErrorBoundaryState {
-  hasError: boolean;
-}
-
-class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  constructor(props: ErrorBoundaryProps) {
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean }> {
+  constructor(props: any) {
     super(props);
     this.state = { hasError: false };
   }
-
-  static getDerivedStateFromError(error: Error) {
+  static getDerivedStateFromError() {
     return { hasError: true };
   }
-
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("Error caught in ErrorBoundary:", error, errorInfo);
+  componentDidCatch(error: any, info: any) {
+    // Você pode logar o erro aqui
+    console.error(error, info);
   }
-
   render() {
     if (this.state.hasError) {
-      return <h1>Something went wrong.</h1>;
+      return (
+        <div className="p-8 text-center text-red-600">
+          <h2>Ocorreu um erro inesperado.</h2>
+          <p>Tente recarregar a página ou entrar em contato com o suporte.</p>
+        </div>
+      );
     }
-
-    return this.props.children; 
+    return this.props.children;
   }
 }
 

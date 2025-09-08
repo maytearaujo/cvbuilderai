@@ -1,6 +1,49 @@
 import React, { useState } from 'react';
+import Toast from '../UI/Toast';
 
-const FormSection: React.FC<{ formData: any; setFormData: any }> = ({ formData, setFormData }) => {
+// Mock da chamada IA contextual
+const enhanceTextAI = async (text: string, type: string, retries = 2): Promise<string> => {
+    return new Promise<string>((resolve, reject) => {
+        setTimeout(() => {
+            if (text.trim() === "") {
+                if (retries > 0) {
+                    // Retry automático
+                    enhanceTextAI(text, type, retries - 1).then(resolve).catch(reject);
+                } else {
+                    reject("Campo vazio");
+                }
+            } else {
+                let improved = text;
+                if (type === "Resumo Profissional") {
+                    improved =
+                        `Profissional com sólida experiência e foco em resultados. ` +
+                        `Palavras-chave: liderança, inovação, eficiência, colaboração. ` +
+                        `Correção gramatical aplicada. Otimizado para impacto. ` +
+                        improved;
+                } else if (type === "Descrição") {
+                    improved =
+                        `• Gerenciou projetos utilizando verbos de ação e resultados quantificáveis.\n` +
+                        `• Otimização de processos, aumento de produtividade em 20%.\n` +
+                        `• Correção ortográfica e fluência aprimorada.\n` +
+                        improved;
+                }
+                improved = improved.replace(/\s{2,}/g, ' ').replace('.', '.');
+                resolve(`[IA] ${type}: ${improved} (melhorado)`);
+            }
+        }, 1200);
+    });
+};
+
+interface FormSectionProps {
+    formData: any;
+    setFormData: (data: any) => void;
+}
+
+const FormSection: React.FC<FormSectionProps> = ({ formData, setFormData }) => {
+    // Toast feedback
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+    // Validações campos básicos
     const [errors, setErrors] = useState({
         nome: '',
         email: '',
@@ -8,7 +51,6 @@ const FormSection: React.FC<{ formData: any; setFormData: any }> = ({ formData, 
         linkedin: '',
     });
 
-    // Validação simples
     const validate = (field: string, value: string) => {
         switch (field) {
             case 'nome':
@@ -24,11 +66,50 @@ const FormSection: React.FC<{ formData: any; setFormData: any }> = ({ formData, 
         }
     };
 
-    // Atualiza formData e erros em tempo real
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
         setErrors({ ...errors, [name]: validate(name, value) });
+    };
+
+    // Estado IA feedback
+    const [loadingResumo, setLoadingResumo] = useState(false);
+    const [errorResumo, setErrorResumo] = useState('');
+
+    const [loadingDescIdx, setLoadingDescIdx] = useState<number | null>(null);
+    const [errorDescIdx, setErrorDescIdx] = useState<number | null>(null);
+
+    // Funções para IA com Toast integrado
+    const handleEnhanceResumo = async () => {
+        setLoadingResumo(true);
+        setErrorResumo('');
+        try {
+            const improved = await enhanceTextAI(formData.resumo, "Resumo Profissional");
+            setFormData({ ...formData, resumo: improved });
+            setToast({ message: 'Resumo melhorado com sucesso!', type: 'success' });
+        } catch {
+            setErrorResumo("Não foi possível melhorar o texto.");
+            setToast({ message: 'Erro ao melhorar o resumo.', type: 'error' });
+        } finally {
+            setLoadingResumo(false);
+        }
+    };
+
+    const handleEnhanceDescricao = async (idx: number) => {
+        setLoadingDescIdx(idx);
+        setErrorDescIdx(null);
+        try {
+            const improved = await enhanceTextAI(formData.experiencias[idx].descricao, "Descrição");
+            const novasExperiencias = [...formData.experiencias];
+            novasExperiencias[idx].descricao = improved;
+            setFormData({ ...formData, experiencias: novasExperiencias });
+            setToast({ message: 'Descrição melhorada com sucesso!', type: 'success' });
+        } catch {
+            setErrorDescIdx(idx);
+            setToast({ message: 'Erro ao melhorar a descrição.', type: 'error' });
+        } finally {
+            setLoadingDescIdx(null);
+        }
     };
 
     // Habilidades
@@ -102,7 +183,6 @@ const FormSection: React.FC<{ formData: any; setFormData: any }> = ({ formData, 
     };
 
     const adicionarExperiencia = () => {
-        // Validação simples antes de adicionar
         const errs = {
             empresa: validateExp('empresa', novaExperiencia.empresa),
             cargo: validateExp('cargo', novaExperiencia.cargo),
@@ -196,10 +276,29 @@ const FormSection: React.FC<{ formData: any; setFormData: any }> = ({ formData, 
                         value={formData.resumo}
                         onChange={handleChange}
                     />
-                    <div className="flex justify-between text-sm text-gray-500 mt-1">
+                    <div className="flex justify-between items-center text-sm text-gray-500 mt-1">
                         <span>Máx: 500 caracteres</span>
                         <span>{formData.resumo.length} / 500</span>
+                        <button
+                            type="button"
+                            className={`ml-2 px-3 py-1 rounded bg-green-600 text-white hover:bg-green-700 transition duration-300 ease-in-out flex items-center ${loadingResumo ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            onClick={handleEnhanceResumo}
+                            disabled={loadingResumo}
+                        >
+                            {loadingResumo ? (
+                                <svg className="animate-spin h-4 w-4 mr-2 text-white" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="white" strokeWidth="4" fill="none" />
+                                    <path className="opacity-75" fill="white" d="M4 12a8 8 0 018-8v8z" />
+                                </svg>
+                            ) : null}
+                            {loadingResumo ? 'Melhorando...' : 'Melhorar'}
+                        </button>
                     </div>
+                    {errorResumo && (
+                        <span className="text-red-500 text-sm">
+                            {errorResumo} Tente novamente.
+                        </span>
+                    )}
                 </div>
             </form>
             <h2 className="text-xl font-semibold mt-6">Habilidades</h2>
@@ -328,6 +427,17 @@ const FormSection: React.FC<{ formData: any; setFormData: any }> = ({ formData, 
                                 {exp.periodoInicio} - {exp.atual ? 'Atual' : exp.periodoFim})
                                 <br />
                                 <span className="text-xs text-gray-500">{exp.descricao}</span>
+                                <button
+                                    type="button"
+                                    className={`ml-2 px-2 py-1 rounded bg-green-600 text-white hover:bg-green-700 ${loadingDescIdx === idx ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    onClick={() => handleEnhanceDescricao(idx)}
+                                    disabled={loadingDescIdx === idx}
+                                >
+                                    {loadingDescIdx === idx ? 'Melhorando...' : 'Melhorar'}
+                                </button>
+                                {errorDescIdx === idx && (
+                                    <span className="text-red-500 text-sm ml-2">Não foi possível melhorar.</span>
+                                )}
                             </span>
                             <button
                                 type="button"
@@ -340,6 +450,13 @@ const FormSection: React.FC<{ formData: any; setFormData: any }> = ({ formData, 
                     ))}
                 </ul>
             </div>
+            {toast && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => setToast({ message: 'Erro ao melhorar o resumo. Tente novamente.', type: 'error' })}
+                />
+            )}
         </div>
     );
 };

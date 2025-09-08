@@ -1,22 +1,10 @@
 import React from 'react';
 
-interface ToastProps {
-  message: string;
-  duration?: number;
-  onClose: () => void;
-}
-
-const Toast: React.FC<ToastProps> = ({ message, duration = 3000, onClose }) => {
-  React.useEffect(() => {
-    const timer = setTimeout(onClose, duration);
-    return () => clearTimeout(timer);
-  }, [duration, onClose]);
-
-  return (
-    <div className="toast">
-      {message}
-    </div>
-  );
-};
+const Toast: React.FC<{ message: string; type: 'success' | 'error'; onClose: () => void }> = ({ message, type, onClose }) => (
+  <div className={`fixed top-6 right-6 px-4 py-2 rounded shadow-lg text-white z-50 transition duration-300 ${type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
+    {message}
+    <button className="ml-4 text-white font-bold" onClick={onClose}>×</button>
+  </div>
+);
 
 export default Toast;
